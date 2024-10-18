@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  nestjs:
+    build:
+      context: .
+      dockerfile: DockerFile
+    container_name: nestjs
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/takehometest
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    command: npm run start:prod
+    
+networks:
+  default:
+    name: app_network
+
+volumes:
+  mongodb_data:
